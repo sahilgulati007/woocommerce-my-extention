@@ -298,7 +298,8 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
                 'global-notice',
                 __( 'Global Notice', 'sitepoint' ),
                 'global_notice_meta_box_callback',
-                $screen
+                $screen,
+                'side'
             );
         }
     }
