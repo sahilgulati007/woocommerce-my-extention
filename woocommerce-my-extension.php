@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WooCommerce My Extension
- * Plugin URI: http://woocommerce.com/products/woocommerce-extension/
+ * Plugin URI: http://yourdomain.com/
  * Description: Your extension's description text.
  * Version: 1.0.0
  * Author: Sahil Gulati
@@ -15,7 +15,6 @@
  * WC requires at least: 2.2
  * WC tested up to: 2.3
  *
- * Copyright: © 2009-2015 WooCommerce.
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
