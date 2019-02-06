@@ -427,13 +427,13 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
     function sg_register_custom_order_status( $order_statuses ){
 
         // Status must start with "wc-"
-        $order_statuses['wc-custom-status'] = array(
-            'label'                     => _x( 'Custom Status', 'Order status', 'woocommerce' ),
+        $order_statuses['wc-back-order'] = array(
+            'label'                     => _x( 'BackOrder', 'Order status', 'woocommerce' ),
             'public'                    => false,
             'exclude_from_search'       => false,
             'show_in_admin_all_list'    => true,
             'show_in_admin_status_list' => true,
-            'label_count'               => _n_noop( 'Custom Status <span class="count">(%s)</span>', 'Custom Status <span class="count">(%s)</span>', 'woocommerce' ),
+            'label_count'               => _n_noop( 'BackOrder <span class="count">(%s)</span>', 'BackOrder <span class="count">(%s)</span>', 'woocommerce' ),
         );
         return $order_statuses;
     }
@@ -444,7 +444,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
     add_filter( 'wc_order_statuses', 'sg_show_custom_order_status' );
 
     function sg_show_custom_order_status( $order_statuses ) {
-        $order_statuses['wc-custom-status'] = _x( 'Custom Status', 'Order status', 'woocommerce' );
+        $order_statuses['wc-back-order'] = _x( 'BackOrder', 'Order status', 'woocommerce' );
         return $order_statuses;
     }
 
@@ -452,7 +452,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
     function sg_get_custom_order_status_bulk( $bulk_actions ) {
         // Note: "mark_" must be there instead of "wc"
-        $bulk_actions['mark_custom-status'] = 'Change status to custom status';
+        $bulk_actions['mark_back-order'] = 'Change status to BackOrder';
         return $bulk_actions;
     }
 
@@ -465,11 +465,58 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
     function sg_thankyou_change_order_status( $order_id ){
         if( ! $order_id ) return;
-        $order = wc_get_order( $order_id );
+//        $order = wc_get_order( $order_id );
+//
+//        // Status without the "wc-" prefix
+//        $order->update_status( 'custom-status' );
+        $order = new WC_Order($order_id);
+        $items = $order->get_items();
+        $backorder = FALSE;
 
-        // Status without the "wc-" prefix
-        $order->update_status( 'custom-status' );
+        foreach ($items as $item) {
+            if ($item['Backordered']) {
+                $backorder = TRUE;
+                break;
+            }
+        }
+        if($backorder){
+            $order->update_status('back-order'); //change your status here
+        }
     }
+
+    //backorder
+//    function mysite_hold($order_id) {
+//
+//        $order = new WC_Order($order_id);
+//        $items = $order->get_items();
+//        $backorder = FALSE;
+//
+//        foreach ($items as $item) {
+//            if ($item['Backordered']) {
+//                $backorder = TRUE;
+//                break;
+//            }
+//        }
+//        if($backorder){
+//            $order->update_status('completed'); //change your status here
+//        }
+//    }
+//    add_action('woocommerce_order_status_on-hold', 'mysite_hold');
+
+    // Adding new custom status to admin order list bulk dropdown
+//    add_filter( 'bulk_actions-edit-shop_order', 'custom_dropdown_bulk_actions_shop_order', 50, 1 );
+//    function custom_dropdown_bulk_actions_shop_order( $actions ) {
+//        $new_actions = array();
+//
+//        // add new order status before processing
+//        foreach ($actions as $key => $action) {
+//            if ('mark_processing' === $key)
+//                $new_actions['mark_test-accepted'] = __( 'Change status to Accepted', 'woocommerce' );
+//
+//            $new_actions[$key] = $action;
+//        }
+//        return $new_actions;
+//    }
 
 
 }
