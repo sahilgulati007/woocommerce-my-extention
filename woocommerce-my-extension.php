@@ -383,4 +383,93 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 //    }
 //
 //    add_filter( 'the_content', 'global_notice_before_post' );
+
+    //add country in user list
+
+    add_filter( 'manage_users_columns', 'sg_add_new_user_column' );
+
+    function sg_add_new_user_column( $columns ) {
+        $columns['billing_country'] = 'Billing Country';
+        return $columns;
+    }
+
+    add_filter( 'manage_users_custom_column', 'sg_add_new_user_column_content', 10, 3 );
+
+    function sg_add_new_user_column_content( $content, $column, $user_id ) {
+
+        if ( 'billing_country' === $column ) {
+            $customer = new WC_Customer( $user_id );
+            $content = $customer->get_billing_country();
+        }
+
+        return $content;
+    }
+
+    // new badge on product aaded in last 30days
+
+    add_action( 'woocommerce_before_shop_loop_item_title', 'sg_new_badge_shop_page', 3 );
+
+    function sg_new_badge_shop_page() {
+        global $product;
+        $newness_days = 30;
+        $created = strtotime( $product->get_date_created() );
+        if ( ( time() - ( 60 * 60 * 24 * $newness_days ) ) < $created ) {
+            echo '<span class="itsnew onsale">' . esc_html__( 'New!', 'woocommerce' ) . '</span>';
+        }
+    }
+
+
+    // ---------------------
+// 1. Register Order Status
+
+    add_filter( 'woocommerce_register_shop_order_post_statuses', 'sg_register_custom_order_status' );
+
+    function sg_register_custom_order_status( $order_statuses ){
+
+        // Status must start with "wc-"
+        $order_statuses['wc-custom-status'] = array(
+            'label'                     => _x( 'Custom Status', 'Order status', 'woocommerce' ),
+            'public'                    => false,
+            'exclude_from_search'       => false,
+            'show_in_admin_all_list'    => true,
+            'show_in_admin_status_list' => true,
+            'label_count'               => _n_noop( 'Custom Status <span class="count">(%s)</span>', 'Custom Status <span class="count">(%s)</span>', 'woocommerce' ),
+        );
+        return $order_statuses;
+    }
+
+// ---------------------
+// 2. Show Order Status in the Dropdown @ Single Order and "Bulk Actions" @ Orders
+
+    add_filter( 'wc_order_statuses', 'sg_show_custom_order_status' );
+
+    function sg_show_custom_order_status( $order_statuses ) {
+        $order_statuses['wc-custom-status'] = _x( 'Custom Status', 'Order status', 'woocommerce' );
+        return $order_statuses;
+    }
+
+    add_filter( 'bulk_actions-edit-shop_order', 'sg_get_custom_order_status_bulk' );
+
+    function sg_get_custom_order_status_bulk( $bulk_actions ) {
+        // Note: "mark_" must be there instead of "wc"
+        $bulk_actions['mark_custom-status'] = 'Change status to custom status';
+        return $bulk_actions;
+    }
+
+
+
+// ---------------------
+// 3. Set Custom Order Status @ WooCommerce Checkout Process
+
+    add_action( 'woocommerce_thankyou', 'sg_thankyou_change_order_status' );
+
+    function sg_thankyou_change_order_status( $order_id ){
+        if( ! $order_id ) return;
+        $order = wc_get_order( $order_id );
+
+        // Status without the "wc-" prefix
+        $order->update_status( 'custom-status' );
+    }
+
+
 }
